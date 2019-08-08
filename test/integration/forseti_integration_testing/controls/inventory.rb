@@ -312,4 +312,114 @@ control 'inventory' do
             command("forseti model delete model_new")
         end
     end
+
+    describe "Explain list members who has access to IAM storage.Admin role expand groups" do
+        subject do 
+            command("forseti explainer access_by_authz --role roles/storage.admin --expand_groups ")
+        end
+    
+        before(:context) do 
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+            command("forseti model use model_new").result
+        end
+    
+        its("exit_status") { should eq 0 }
+        its("stdout") { should match /organization\/431942389544/ }
+        its("stdout") { should match /project\/forseti-security-release/ }
+    
+        after(:context) do 
+            command("forseti inventory purge 0").result
+            command("forseti model delete model_new")
+        end
+    end
+
+    describe "Explain list members who has access to IAM storage.Admin role" do
+        subject do 
+            command("forseti explainer access_by_authz --role roles/storage.admin")
+        end
+    
+        before(:context) do 
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+            command("forseti model use model_new").result
+        end
+    
+        its("exit_status") { should eq 0 }
+        its("stdout") { should match /organization\/431942389544/ }
+        its("stdout") { should match /project\/forseti-security-release/ }
+    
+        after(:context) do 
+            command("forseti inventory purge 0").result
+            command("forseti model delete model_new")
+        end
+    end
+
+    describe "Explain list members who have relation to storage.bucket.delete permission" do
+        subject do 
+            command("forseti explainer access_by_authz --permission storage.buckets.delete")
+        end
+    
+        before(:context) do 
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+            command("forseti model use model_new").result
+        end
+    
+        its("exit_status") { should eq 0 }
+        its("stdout") { should match /serviceaccount\/sa-it-450@forseti-security-release.iam.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/252193904592-compute@developer.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/252193904592@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/438905703252@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/service-438905703252@containerregistry.iam.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/438905703252@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /group\/mdb.forseti-security-eng-team@google.com/ }
+        its("stdout") { should match /user\/admin@gold.forsetisecurity.dev/ }
+        its("stdout") { should match /user\/dkuhn@google.com/ }
+        its("stdout") { should match /user\/rdevani@google.com/ }
+        its("stdout") { should match /organization\/431942389544/ }
+        its("stdout") { should match /project\/forseti-security-release/ }
+        its("stdout") { should match /project\/integration-1-439f/ }
+    
+        after(:context) do 
+            command("forseti inventory purge 0").result
+            command("forseti model delete model_new")
+        end
+    end
+
+    describe "Explain list members who have relation to storage.bucket.delete permission expand groups" do
+        subject do 
+            command("forseti explainer access_by_authz --permission storage.buckets.delete --expand_groups")
+        end
+    
+        before(:context) do 
+            command("forseti inventory create").result
+            inventory_id = JSON.parse(command("forseti inventory list").stdout).fetch("id")
+            command("forseti model create --inventory_index_id #{inventory_id} model_new").result
+            command("forseti model use model_new").result
+        end
+    
+        its("exit_status") { should eq 0 }
+        its("stdout") { should match /serviceaccount\/sa-it-450@forseti-security-release.iam.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/252193904592-compute@developer.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/252193904592@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/438905703252@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/service-438905703252@containerregistry.iam.gserviceaccount.com/ }
+        its("stdout") { should match /serviceaccount\/438905703252@cloudservices.gserviceaccount.com/ }
+        its("stdout") { should match /group\/mdb.forseti-security-eng-team@google.com/ }
+        its("stdout") { should match /user\/admin@gold.forsetisecurity.dev/ }
+        its("stdout") { should match /user\/dkuhn@google.com/ }
+        its("stdout") { should match /user\/rdevani@google.com/ }
+        its("stdout") { should match /organization\/431942389544/ }
+        its("stdout") { should match /project\/forseti-security-release/ }
+        its("stdout") { should match /project\/integration-1-439f/ }
+    
+        after(:context) do 
+            command("forseti inventory purge 0").result
+            command("forseti model delete model_new")
+        end
+    end
 end
