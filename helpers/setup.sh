@@ -78,20 +78,14 @@ if [[ -z "$PROJECT_ID" ]]; then
   exit 1
 fi
 
-if [[ -z "$ORG_ID" ]]; then
-  echo "ERROR: ORG_ID must be set."
-  show_help >&2
-  exit 1
-fi
-
 # Ensure that we can fetch the IAM policy on the Forseti project.
 if ! gcloud projects get-iam-policy "$PROJECT_ID" 2>&- 1>&-; then
   echo "ERROR: Unable to fetch IAM policy on project $PROJECT_ID."
   exit 1
 fi
 
-# Ensure that we can fetch the IAM policy on the GCP organization.
-if ! gcloud organizations get-iam-policy "$ORG_ID" 2>&- 1>&-; then
+# Ensure that we can fetch the IAM policy on the GCP organization if an ORG_ID was provided
+if [[ ! -z "$ORG_ID" ]] && (! gcloud organizations get-iam-policy "$ORG_ID" 2>&- 1>&-); then
   echo "ERROR: Unable to fetch IAM policy on organization $ORG_ID."
   exit 1
 fi
@@ -149,17 +143,21 @@ if [[ "$IS_UPDATE" == "0" ]]; then
         --user-output-enabled false
 fi
 
-echo "Applying permissions for org $ORG_ID and project $PROJECT_ID..."
+if [[ ! -z "$ORG_ID" ]]; then
+    echo "Applying permissions for org $ORG_ID and project $PROJECT_ID..."
 
-gcloud organizations add-iam-policy-binding "${ORG_ID}" \
-    --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-    --role="roles/resourcemanager.organizationAdmin" \
-    --user-output-enabled false
+    gcloud organizations add-iam-policy-binding "${ORG_ID}" \
+        --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+        --role="roles/resourcemanager.organizationAdmin" \
+        --user-output-enabled false
 
-gcloud organizations add-iam-policy-binding "${ORG_ID}" \
-    --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
-    --role="roles/iam.securityReviewer" \
-    --user-output-enabled false
+    gcloud organizations add-iam-policy-binding "${ORG_ID}" \
+        --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+        --role="roles/iam.securityReviewer" \
+        --user-output-enabled false
+else
+    echo "Applying permissions for project $PROJECT_ID, ignoring org..."
+fi
 
 gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
     --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
